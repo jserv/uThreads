@@ -23,7 +23,7 @@ std::default_random_engine generator;
 void echo(void* c){
 
      Connection* cconn = (Connection*)c;
-     std::vector<char>  msg(1025);
+     std::vector<char>  msg(150);
      int res;
      double now;
      double difference;
@@ -102,11 +102,17 @@ int main(int argc, char* argv[]) {
     //Creating the socket
     try{
         Connection sconn(AF_INET, SOCK_STREAM , 0);
+	if(sconn.nodelay() < 0){
+	    cerr << "Could set socket nodelay" << endl;
+            return 1;
+	}
+	int i=1;
+	setsockopt( sconn.getFd(), IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof(i)); 
         if( sconn.bind((struct sockaddr *) &servaddr, sizeof(servaddr)) < 0){
             cerr << "Could not bind to 8888" << endl;
             return 1;
         }
-        sconn.listen(10);
+        sconn.listen(1000);
         for(;;){
             Connection* cconn  = sconn.accept((struct sockaddr*)nullptr, nullptr);
             cout << "Accepted" << endl;
