@@ -6,11 +6,7 @@ LIB_DIR=lib
 TEST_DIR=test
 DEST_DIR=/usr/local
 
-VERSION_MAJOR=0
-VERSION=$(VERSION_MAJOR)
-
 LIB_NAME=libuThreads.so
-LIB_FULL_NAME=$(LIB_NAME).$(VERSION)
 
 CXX		 := g++ -std=c++1y
 CXXFLAGS := -O3 -g -m64 -fpermissive -mtls-direct-seg-refs -fno-extern-tls-init -pthread -DNDEBUG -DNPOLLNONBLOCKING
@@ -26,9 +22,9 @@ OBJECTS := $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 SOBJECTS:= $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SSOURCES:.$(ASMEXT)=.o))
 TESTOBJECTS := $(patsubst $(TEST_DIR)/%,$(BIN_DIR)/%,$(TESTSOURCES:.$(SRCEXT)=))
 
-LIB 	:= -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -ldl -Wl,-soname,$(LIB_NAME).$(VERSION_MAJOR)
+LIB 	:= -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -ldl -Wl,-soname,$(LIB_NAME)
 INC		:= -I $(SRC_DIR) -I $(INCLUDE_DIR)
-TARGET	:= $(LIB_DIR)/$(LIB_FULL_NAME)
+TARGET	:= $(LIB_DIR)/$(LIB_NAME)
 
 HTTP_PARSER := test/include/http_parser.c
 
@@ -64,7 +60,7 @@ $(BIN_DIR)/%: $(TEST_DIR)/%.$(SRCEXT)
 	$(eval HTTP := $(if $(findstring webserver,$(<)), $(HTTP_PARSER), ))
 	$(CXX) -O3 -g -I./include -I./src -o $@ $(HTTP) $< \
 		-Wl,-rpath-link=./lib \
-		-Wl,-rpath='$$ORIGIN:$$ORIGIN/../lib' -L./lib -luThreads #lib/libuThreads.so.0
+		-Wl,-rpath='$$ORIGIN:$$ORIGIN/../lib' -L./lib -luThreads
 
 clean:
 	@echo " Cleaning..."
@@ -72,14 +68,3 @@ clean:
 	find ./$(BUILD_DIR) -type f -name '*.d' -delete
 	rm -rf $(BIN_DIR)/*
 	rm -rf $(LIB_DIR)/*
-
-install: all
-	mkdir -p $(DEST_DIR)/include/uThreads
-	[ -d $(DEST_DIR)/lib ] || mkdir -p $(DEST_DIR)/lib
-	rm -rf $(DEST_DIR)/lib/$(LIB_NAME)*
-	install lib/$(LIB_FULL_NAME) $(DEST_DIR)/lib
-	ln -s $(DEST_DIR)/lib/$(LIB_FULL_NAME) $(DEST_DIR)/lib/$(LIB_NAME).$(VERSION_MAJOR)
-	ln -s $(DEST_DIR)/lib/$(LIB_FULL_NAME) $(DEST_DIR)/lib/$(LIB_NAME)
-	install $(INCLUDE_DIR)/*	$(DEST_DIR)/include/uThreads
-	cd $(SRC_DIR); find . -type f -name '*.h' | cpio -updm $(DEST_DIR)/include/uThreads
-	ldconfig
