@@ -8,8 +8,10 @@ DEST_DIR=/usr/local
 
 LIB_NAME=libuThreads.so
 
-CXX		 := g++ -std=c++1y
-CXXFLAGS := -O3 -g -m64 -fpermissive -mtls-direct-seg-refs -fno-extern-tls-init -pthread -DNDEBUG -DNPOLLNONBLOCKING
+CXX		 := g++-7 -std=c++1y
+CXXFLAGS := -O2 -g
+CXXFLAGS += -fpermissive -mtls-direct-seg-refs -fno-extern-tls-init
+CXXFLAGS += -DNDEBUG -DNPOLLNONBLOCKING
 
 SRCEXT 	:= cpp
 ASMEXT 	:= S
@@ -33,11 +35,10 @@ all: $(TARGET)
 	@mkdir -p $(BUILD_DIR)/runtime
 	@mkdir -p $(BUILD_DIR)/generic
 
-#Pass O1 to linker to optimize the hash table size, can be verified by `readelf -I`
 $(TARGET) :  $(SOBJECTS) $(OBJECTS)
 	@echo " Linking..."
 	@mkdir -p $(LIB_DIR)
-	$(CXX) -Wl,-O1 -shared -m64 -fPIC $^ -o $(TARGET) $(LIB)
+	$(CXX) -shared -fPIC $^ -o $(TARGET) $(LIB)
 -include $(OBJECTS:.o=.d)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.$(SRCEXT)
@@ -50,7 +51,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.$(SRCEXT)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.$(ASMEXT)
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(INC) -c -m64 -shared -fPIC -o $@ $<
+	$(CXX) $(INC) -c -shared -fPIC -o $@ $<
 
 #tests
 test: $(TESTOBJECTS)
@@ -58,7 +59,7 @@ test: $(TESTOBJECTS)
 $(BIN_DIR)/%: $(TEST_DIR)/%.$(SRCEXT)
 	@mkdir -p $(BIN_DIR)
 	$(eval HTTP := $(if $(findstring webserver,$(<)), $(HTTP_PARSER), ))
-	$(CXX) -O3 -g -I./include -I./src -o $@ $(HTTP) $< \
+	$(CXX) -O2 -g -I./include -I./src -o $@ $(HTTP) $< \
 		-Wl,-rpath-link=./lib \
 		-Wl,-rpath='$$ORIGIN:$$ORIGIN/../lib' -L./lib -luThreads
 
