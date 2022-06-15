@@ -5,7 +5,7 @@
  *      Author: Saman Barghi
  */
 
-#include <uThreads/uThreads.h>
+#include "uThreads.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>

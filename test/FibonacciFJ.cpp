@@ -4,7 +4,7 @@
  *  Created on: Jul 11, 2016
  *      Author: Saman Barghi
  */
-#include <uThreads/uThreads.h>
+#include "uThreads.h"
 #include <iostream>
 #include <cstdlib>
 

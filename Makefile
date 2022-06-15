@@ -7,9 +7,7 @@ TEST_DIR=test
 DEST_DIR=/usr/local
 
 VERSION_MAJOR=0
-VERSION_MINOR=2
-VERSION_PATCH=0
-VERSION=$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
+VERSION=$(VERSION_MAJOR)
 
 LIB_NAME=libuThreads.so
 LIB_FULL_NAME=$(LIB_NAME).$(VERSION)
@@ -64,7 +62,9 @@ test: $(TESTOBJECTS)
 $(BIN_DIR)/%: $(TEST_DIR)/%.$(SRCEXT)
 	@mkdir -p $(BIN_DIR)
 	$(eval HTTP := $(if $(findstring webserver,$(<)), $(HTTP_PARSER), ))
-	$(CXX) -O3 -g -o $@ $(HTTP) $< -luThreads
+	$(CXX) -O3 -g -I./include -I./src -o $@ $(HTTP) $< \
+		-Wl,-rpath-link=./lib \
+		-Wl,-rpath='$$ORIGIN:$$ORIGIN/../lib' -L./lib -luThreads #lib/libuThreads.so.0
 
 clean:
 	@echo " Cleaning..."
