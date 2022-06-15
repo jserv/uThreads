@@ -104,6 +104,11 @@ int Connection::bind(const struct sockaddr *addr, socklen_t addrlen){
     assert(fd > 0);
     return ::bind(fd, addr, addrlen);
 }
+//=e
+int Connection::nodelay(){
+	int i =1;
+	return ::setsockopt( fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof(i)); 
+}
 
 int Connection::connect(const struct sockaddr *addr,socklen_t addrlen){
     assert(fd > 0);

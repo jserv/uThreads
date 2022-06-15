@@ -18,7 +18,8 @@
 #ifndef UTHREADS_INCLUDE_NETWORK_H_
 #define UTHREADS_INCLUDE_NETWORK_H_
 #include "IOHandler.h"
-
+#include <netinet/tcp.h>
+#include<arpa/inet.h> //inet_addr 
 /**
  * @class Connection
  * @brief Represents a network connection
@@ -128,6 +129,9 @@ public:
      */
     int bind(const struct sockaddr *addr,
              socklen_t addrlen);
+	// =e
+	int nodelay();
+
 
     /**
      * @brief Same as connect syscall

@@ -1,8 +1,8 @@
 /*
  * EchoServer.cpp
  *
- *  Created on: Jan 28, 2016
- *      Author: Saman Barghi
+ *  Created on: Apr 19, 2018
+ *      Authors: Saman Barghi, Erfan Sharafzadeh
  */
 
 
@@ -11,8 +11,13 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <iostream>
+#include <random>
+#include <sys/time.h>
+#include <time.h>
 
 using namespace std;
+std::default_random_engine generator;
+int k = 1.0, theta = 1.0;
 
 #define MAXIMUM_THREADS_PER_CLUSTER 8
 
@@ -21,8 +26,23 @@ void echo(void* c){
      Connection* cconn = (Connection*)c;
      std::vector<char>  msg(1025);
      int res;
-
+     double now;
+     double difference;
+     struct timeval my_time, moment;
+     std::gamma_distribution<double> distribution(k, theta);
      while( (res = cconn->recv(msg.data(), msg.size(), 0)) > 0){
+         do {
+             now = distribution(generator);
+             printf("now: %f\n", now);
+         }
+         while (now < 0);
+    	 gettimeofday(&my_time, 0);
+    	 //printf("it will take %f us\n", now);
+    	 do {
+    	 	 gettimeofday(&moment, 0);
+    	 	 difference = (moment.tv_sec - my_time.tv_sec)*1000000 + (moment.tv_usec - my_time.tv_usec);
+             //printf("then: %f\n", difference);
+    	 } while(difference < now);
          cconn->write(msg.data(), res);
      }
      if(res == 0){
@@ -39,13 +59,15 @@ void echo(void* c){
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 3) {
-      cerr << "Usage: " << argv[0] << " <Server Port> <threads>" << endl;
+    if (argc != 5) {
+      cerr << "Usage: " << argv[0] << " <Server Port> <threads> <k> <theta>" << endl;
       exit(1);
     }
     uint serverPort = atoi(argv[1]);
-	
+
 	size_t thread_count = atoi(argv[2]);
+    k = atof(argv[3]);
+    theta = atof(argv[4]);
     //Create clusters based on MAXIMUM_THREADS_PER_CLUSTER
     size_t cluster_count = (thread_count/(MAXIMUM_THREADS_PER_CLUSTER+1))+1;
 
